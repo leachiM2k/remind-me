@@ -1,44 +1,21 @@
 'use strict';
 
+const ReminderDataMemoryConnector = require('./ReminderDataMemoryConnector');
+const ReminderDataMongoConnector = require('./ReminderDataMongoConnector');
+
 class ReminderDataService {
-	constructor() {
-		this.data = [];
-	}
-
-	static factory() {
-		return new ReminderDataService();
-	}
-
-	getItemsFromPast() {
-		var now = Date.now();
-		return this.data.filter(item => item.time.getTime() <= now);
-	}
-
-	getAll() {
-		return this.data;
-	}
-
-	getById() {
-		id = Number(id);
-		return this.data
-			.filter(item => item.id === id)
-			.reduce((prev, curr) => curr, false);		
-	}
-
-	del(id) {
-		id = Number(id);
-		var foundIndex = this.data.findIndex(item => item.id === id);
-		if(foundIndex !== -1) {
-			this.data.splice(foundIndex, 1);
-			return true;
+	static factory(connector) {
+		if(connector) {
+			switch(connector.toLowerCase()) {
+				case 'memory':
+					return ReminderDataMemoryConnector.factory();
+					break;
+				case 'mongo':
+					return ReminderDataMongoConnector.factory();
+					break;
+			}
 		}
-		return false;
-	}
-
-	save(entry) {
-		entry.id = entry.id || Math.floor(Math.random() * 1e12);
-		this.data.push(entry);
-		return entry.id;
+		throw new Error('unknown connector');
 	}
 }
 

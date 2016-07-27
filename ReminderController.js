@@ -13,30 +13,34 @@ class ServerController {
 	}
 
 	get(req, res, next) {
-		var result = new Error();
+		var promise;
 		if(req.params.id) {
-			result = this.reminderService.get(req.params.id) || 404;
+			promise = this.reminderService.get(req.params.id)
+				.then(result => result || 404 );
 		} else {
-			result = this.reminderService.list();
+			promise = this.reminderService.list();
 		}
-		res.send(result);
-		next();
+		promise.then(result => {
+			res.send(result);
+		}).then(next, next);
 	}
 
 	post(req, res, next) {
-		var result = this.reminderService.create(
+		this.reminderService.create(
 			req.params.type,
 			req.params.typeOptions,
 			req.params.message,
 			req.params.time
-		);
-		res.send(201, result);
-		next();	
+		).then(result => {
+			res.send(201, result);
+		}).then(next, next);
 	}
 
 	del(req, res, next) {
-		res.send(204);
-		next();	
+		this.reminderService.del(req.params.id)
+		.then(result => {
+			res.send(result ? 204 : 404);
+		}).then(next, next);
 	}
 }
 
