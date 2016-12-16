@@ -7,10 +7,19 @@ class ServerController {
 		this.reminderService = reminderService;
 	}
 
-	static factory() {
-		var reminderService = ReminderService.factory();
-		return new ServerController(reminderService);
+	static factory(container) {
+		return new ServerController(container.ReminderService);
 	}
+
+
+    routes() {
+        return [
+            { method: 'get', path: '/', handler: this.get.bind(this) },
+            { method: 'get', path: '/:id', handler: this.get.bind(this) },
+            { method: 'post', path: '/', handler: this.post.bind(this) },
+            { method: 'del', path: '/:id', handler: this.del.bind(this) }
+        ];
+    }
 
 	get(req, res, next) {
 		var promise;

@@ -1,7 +1,7 @@
 'use strict';
 
-const ReminderDataMemoryConnector = require('./ReminderDataMemoryConnector');
-const ReminderDataMongoConnector = require('./ReminderDataMongoConnector');
+const ReminderDataMemoryConnector = require('./dataConnectors/memory');
+const ReminderDataMongoConnector = require('./dataConnectors/mongo');
 
 class ReminderDataService {
 	static factory(connector) {

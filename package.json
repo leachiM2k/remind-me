@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bottlejs": "^1.5.0",
+    "config": "^1.24.0",
     "mongodb": "^2.2.4",
     "restify": "^4.1.1"
   }

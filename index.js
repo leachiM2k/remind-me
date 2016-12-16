@@ -1,20 +1,20 @@
 'use strict';
 
+var config = require('config');
 var restify = require('restify');
-
-var ServerController = require('./ReminderController');
-var controller = ServerController.factory();
+var repository = require('./FactoryRepository');
 
 var server = restify.createServer();
 server.use(restify.bodyParser());
 
-server.get('/', controller.get.bind(controller));
-server.get('/:id', controller.get.bind(controller));
-server.post('/', controller.post.bind(controller));
-server.del('/:id', controller.del.bind(controller));
+[
+    repository.container.ReminderController
+].forEach(controller => {
+    controller.routes().forEach(route => server[route.method.toLowerCase()].call(server, route.path, route.handler));
+});
 
-server.listen(8080, function() {
-	  console.log('%s listening at %s', server.name, server.url);
+server.listen(config.server.port, function () {
+    console.log('%s listening at %s', server.name, server.url);
 });
 
 

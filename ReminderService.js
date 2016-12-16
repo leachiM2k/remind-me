@@ -1,5 +1,6 @@
 'use strict';
-var ReminderDataService = require('./ReminderDataService');
+var config = require('config');
+var ReminderDataService = require('./services/DataService');
 
 class ReminderService {
 	constructor(dataService, accuracyInSeconds) {
@@ -10,7 +11,7 @@ class ReminderService {
 	}
 
 	static factory() {
-		var reminderDataService = ReminderDataService.factory('mongo');
+		var reminderDataService = ReminderDataService.factory(config.backend.type);
 		return new ReminderService(reminderDataService, 60);
 	}
 
