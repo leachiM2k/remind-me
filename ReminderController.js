@@ -1,8 +1,9 @@
 'use strict';
-
-var ReminderService = require('./ReminderService');
-
 class ServerController {
+    /**
+	 *
+     * @param {ReminderService} reminderService
+     */
 	constructor(reminderService) {
 		this.reminderService = reminderService;
 	}
@@ -37,8 +38,7 @@ class ServerController {
 	post(req, res, next) {
 		this.reminderService.create(
 			req.params.type,
-			req.params.typeOptions,
-			req.params.message,
+            req.params,
 			req.params.time
 		).then(result => {
 			res.send(201, result);

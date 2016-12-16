@@ -1,73 +1,55 @@
 'use strict';
-var config = require('config');
-var ReminderDataService = require('./services/DataService');
-
 class ReminderService {
-	constructor(dataService, accuracyInSeconds) {
-		this.dataService = dataService;
-		
-		setInterval(this._trigger.bind(this), accuracyInSeconds * 1000);
-		this._trigger();
-	}
+    constructor(dataService, typeService, triggerService) {
+        this.dataService = dataService;
+        this.typeService = typeService;
+        this.triggerService = triggerService;
+        this.triggerService.startPolling();
+    }
 
-	static factory() {
-		var reminderDataService = ReminderDataService.factory(config.backend.type);
-		return new ReminderService(reminderDataService, 60);
-	}
+    static factory(container) {
+        var dataService = container.ReminderDataService;
+        var typeService = container.ReminderTypeService;
+        var triggerService = container.ReminderTriggerService;
+        return new ReminderService(dataService, typeService, triggerService);
+    }
 
-	_trigger() {
-		this.dataService.getItemsFromPast().then(interestingJobs => {
-			console.log('##### Found ' + interestingJobs.length + ' items to remind of.');
-			interestingJobs.forEach(item => {
-				console.log('##### TODO: Implement handling for items. Found item: ', item);
-				this.del(item.id);
-			});
-		}).catch(function(error) {
-			console.error('Trigger: Error occurred', error);
-		});
-	}
+    list() {
+        return this.dataService.getAll();
+    }
 
-	list() {
-		return this.dataService.getAll();
-	}
+    get(id) {
+        return this.dataService.getById(id);
+    }
 
-	get(id) {
-		return this.dataService.getById(id);
-	}
+    create(type, payload, time) {
+        var timeObj = new Date(time);
+        if (timeObj < Date.now()) {
+            throw new Error('Reminder time is before now.');
+        }
+        if (isNaN(timeObj)) {
+            throw new Error('Reminder time is not specified or invalid.');
+        }
 
-	create(type, typeOptions, message, time) {
-		var timeObj = new Date(time);
-		if(timeObj < Date.now()) {
-			throw new Error('Reminder time is before now.');
-		}
-		var promise = Promise.resolve();
-		switch(type.toLowerCase()) {
-			case 'mail':
-			case 'email':
-				var entry = {
-					type: 'email',
-					typeOptions: typeOptions,
-					message: message,
-					time: timeObj
-				};
-				promise = this.dataService.save(entry);
-				break;
-			default:
-				throw new Error('Unsupported Type (email, mail allowed)');
-		}
-		return promise.then((newId) => {
-			console.log('##### Added new reminder ' + newId);
-			return {id: newId};
-		});
-	}
+        var typeModel = this.typeService.getModel(type);
+        if (!typeModel) {
+            throw new Error('Unsupported Type (' + this.typeService.list().join(', ') + ')');
+        }
 
-	update() {
-		return false;
-	}
+        var model = new typeModel(payload);
+        return this.dataService.save(model).then((newId) => {
+            console.log('##### Added new reminder ' + newId);
+            return { id: newId };
+        });
+    }
 
-	del(id) {
-		return this.dataService.del(id);
-	}
+    update() {
+        return false;
+    }
+
+    del(id) {
+        return this.dataService.del(id);
+    }
 }
 
 module.exports = ReminderService;

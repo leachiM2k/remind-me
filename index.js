@@ -2,10 +2,17 @@
 
 var config = require('config');
 var restify = require('restify');
+var bunyan = require('bunyan');
+var logger = bunyan.createLogger({ name: 'remind-me' });
 var repository = require('./FactoryRepository');
 
-var server = restify.createServer();
+var server = restify.createServer({
+    log: logger
+});
 server.use(restify.bodyParser());
+server.use(restify.requestLogger());
+server.use(restify.gzipResponse());
+server.use(restify.queryParser());
 
 [
     repository.container.ReminderController
@@ -14,7 +21,6 @@ server.use(restify.bodyParser());
 });
 
 server.listen(config.server.port, function () {
-    console.log('%s listening at %s', server.name, server.url);
+    logger.info('%s listening at %s', server.name, server.url);
 });
-
-
+server.on('after', restify.auditLogger({ log: logger }));
